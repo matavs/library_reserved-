@@ -494,7 +494,7 @@ button_style = {'font': ('Arial', 10), 'bg': '#2c82c9', 'fg': 'white', 'bd': 0,
 #Home Image Button #####
 
 # Load and resize the image
-img = Image.open("IM_PIT/icons/Logo-no_bg.png")  # Supports JPG, PNG, etc.
+img = Image.open("icons/Logo-no_bg.png")  # Supports JPG, PNG, etc.
 img = img.resize((80, 80))  # Resize if needed
 home_icon = ImageTk.PhotoImage(img)
 
@@ -512,7 +512,7 @@ member_frame = tk.Frame(sidebar, bg='#f0f0f0')  # Matches sidebar background
 member_frame.pack(pady=10)
 
 # Load and resize the image
-img = Image.open("IM_PIT/icons/group.png")
+img = Image.open("icons/group.png")
 img = img.resize((40, 40))  # Resize if needed
 member_icon = ImageTk.PhotoImage(img)
 
@@ -535,7 +535,7 @@ member_frame = tk.Frame(sidebar, bg='#f0f0f0')  # Matches sidebar background
 member_frame.pack(pady=10)
 
 # Load and resize the image
-img = Image.open("IM_PIT/icons/book.png")
+img = Image.open("icons/book.png")
 img = img.resize((40, 40))  # Resize if needed
 member_icon = ImageTk.PhotoImage(img)
 
@@ -557,7 +557,7 @@ member_frame = tk.Frame(sidebar, bg='#f0f0f0')  # Matches sidebar background
 member_frame.pack(pady=10)
 
 # Load and resize the image
-img = Image.open("IM_PIT/icons/reservation.png")
+img = Image.open("icons/reservation.png")
 img = img.resize((40, 40))  # Resize if needed
 member_icon = ImageTk.PhotoImage(img)
 
@@ -579,7 +579,7 @@ member_frame = tk.Frame(sidebar, bg='#f0f0f0')  # Matches sidebar background
 member_frame.pack(pady=10)
 
 # Load and resize the image
-img = Image.open("IM_PIT/icons/loan.png")
+img = Image.open("icons/loan.png")
 img = img.resize((40, 40))  # Resize if needed
 member_icon = ImageTk.PhotoImage(img)
 
@@ -601,7 +601,7 @@ member_frame = tk.Frame(sidebar, bg='#f0f0f0')  # Matches sidebar background
 member_frame.pack(pady=10)
 
 # Load and resize the image
-img = Image.open("IM_PIT/icons/fines.png")
+img = Image.open("icons/fines.png")
 img = img.resize((40, 40))  # Resize if needed
 member_icon = ImageTk.PhotoImage(img)
 
@@ -632,17 +632,22 @@ def hide_all_frames():
 
 # --- Home Frame ---
 home_frame = tk.Frame(main_content, bg='#f5f5f5')
-tk.Label(home_frame, text="Welcome to Library Management System", 
+tk.Label(home_frame, text="📗Welcome to Library Management System📗", 
          font=("Arial", 24, "bold"), bg='#f5f5f5').pack(pady=30)
 
 # Welcome message
 welcome_text = """
-This library management system allows you to manage:
-• Members
-• Books
-• Reservations
-• Loans
-• Fines
+📚 Library Management System – Your All-in-One Library Solution
+
+Elevate your library experience with our powerful and user-friendly Library Management System. 
+Designed for efficiency, scalability, and ease of use, this comprehensive application empowers
+you to effortlessly manage all aspects of your library operation:
+
+✅ Member Management
+📖 Book Management 
+📅 Reservation System
+🔄 Loan Tracking 
+💸 Fine Management
 
 Select an option from the sidebar to get started.
 """
@@ -1004,6 +1009,12 @@ help_menu.add_command(label="About", command=lambda: messagebox.showinfo("About"
                                                                        "Library Management System v1.0\n\n"
                                                                        "A comprehensive solution for managing "
                                                                        "library resources, members, and operations."))
+
+# For .png file (Cross-platform)
+from PIL import Image, ImageTk
+icon = Image.open("icons/GreenBook.png")
+photo = ImageTk.PhotoImage(icon)
+root.wm_iconphoto(True, photo)
 
 # Show home frame by default
 show_home()
