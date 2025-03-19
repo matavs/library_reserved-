@@ -1,77 +1,101 @@
 import mysql.connector
 import tkinter as tk
-from tkinter import messagebox
+from tkinter import ttk, messagebox
 
-# Database Connection (Update with your MySQL details)
+# Database Connection
 conn = mysql.connector.connect(
-    host="localhost",      # Change if using a remote server
-    user="root",           # Default XAMPP user
-    password="",           # Leave empty if no password
-    database="library_management"  # Change to your actual database name
+    host="localhost",
+    user="root",
+    password="",
+    database="library_management"
 )
 cursor = conn.cursor()
 
-# Function to Insert Book Data
+def show_home():
+    books_frame.pack_forget()
+    home_frame.pack(fill='both', expand=True)
+
+def show_books():
+    home_frame.pack_forget()
+    books_frame.pack(fill='both', expand=True)
+    fetch_books()
+
+def fetch_books():
+    for row in books_table.get_children():
+        books_table.delete(row)
+    cursor.execute("SELECT BookID, Title, Genre, AvailableCopies FROM Books")
+    for book in cursor.fetchall():
+        books_table.insert("", "end", values=book)
+
 def add_book():
     title = title_entry.get()
-    author = author_entry.get()
     genre = genre_entry.get()
     copies = copies_entry.get()
-
-    if not title or not author or not genre or not copies:
+    if not title or not genre or not copies:
         messagebox.showwarning("Input Error", "All fields are required!")
         return
-
     try:
-        copies = int(copies)  # Ensure AvailableCopies is an integer
-        query = "INSERT INTO Books (Title, Author, Genre, AvailableCopies) VALUES (%s, %s, %s, %s)"
-        values = (title, author, genre, copies)
-        cursor.execute(query, values)
+        copies = int(copies)
+        cursor.execute("INSERT INTO Books (Title, Genre, AvailableCopies) VALUES (%s, %s, %s)", (title, genre, copies))
         conn.commit()
-
         messagebox.showinfo("Success", "Book added successfully!")
-        clear_fields()
-
+        fetch_books()
+        title_entry.delete(0, tk.END)
+        genre_entry.delete(0, tk.END)
+        copies_entry.delete(0, tk.END)
     except ValueError:
-        messagebox.showerror("Input Error", "Available Copies must be a number!")
-    except mysql.connector.Error as err:
-        messagebox.showerror("Database Error", f"Error: {err}")
+        messagebox.showerror("Input Error", "Copies must be a number!")
 
-# Clear input fields after successful insertion
-def clear_fields():
-    title_entry.delete(0, tk.END)
-    author_entry.delete(0, tk.END)
-    genre_entry.delete(0, tk.END)
-    copies_entry.delete(0, tk.END)
+def remove_book():
+    selected_item = books_table.selection()
+    if not selected_item:
+        messagebox.showwarning("Selection Error", "Please select a book to remove!")
+        return
+    book_id = books_table.item(selected_item)['values'][0]
+    cursor.execute("DELETE FROM Books WHERE BookID = %s", (book_id,))
+    conn.commit()
+    messagebox.showinfo("Success", "Book removed successfully!")
+    fetch_books()
 
 # GUI Setup
 root = tk.Tk()
-root.title("Library Management - Add Book")
-root.geometry("350x250")
+root.title("Library Management System")
+root.geometry("800x500")
 
+# Sidebar
+sidebar = tk.Frame(root, width=200, bg='#d3d3d3')
+sidebar.pack(side='left', fill='y')
 
-tk.Label(root, text="Title:").grid(row=0, column=0, padx=10, pady=5)
-title_entry = tk.Entry(root)
-title_entry.grid(row=0, column=1, padx=10, pady=5)
+tk.Button(sidebar, text="Home", command=show_home).pack(pady=10)
+tk.Button(sidebar, text="Books", command=show_books).pack(pady=10)
 
-tk.Label(root, text="Author:").grid(row=1, column=0, padx=10, pady=5)
-author_entry = tk.Entry(root)
-author_entry.grid(row=1, column=1, padx=10, pady=5)
+# Home Frame
+home_frame = tk.Frame(root, bg='white')
+home_frame.pack(fill='both', expand=True)
+tk.Label(home_frame, text="Welcome to Library Management", font=("Arial", 20)).pack(pady=20)
 
-tk.Label(root, text="Genre:").grid(row=2, column=0, padx=10, pady=5)
-genre_entry = tk.Entry(root)
-genre_entry.grid(row=2, column=1, padx=10, pady=5)
+# Books Frame
+books_frame = tk.Frame(root, bg='white')
+search_entry = tk.Entry(books_frame)
+search_entry.pack(pady=5)
+books_table = ttk.Treeview(books_frame, columns=("BookID", "Title", "Genre", "AvailableCopies"), show="headings")
+for col in ("BookID", "Title", "Genre", "AvailableCopies"):
+    books_table.heading(col, text=col)
+books_table.pack(pady=5)
 
-tk.Label(root, text="Available Copies:").grid(row=3, column=0, padx=10, pady=5)
-copies_entry = tk.Entry(root)
-copies_entry.grid(row=3, column=1, padx=10, pady=5)
+title_entry = tk.Entry(books_frame)
+genre_entry = tk.Entry(books_frame)
+copies_entry = tk.Entry(books_frame)
+add_btn = tk.Button(books_frame, text="Add Book", command=add_book)
+remove_btn = tk.Button(books_frame, text="Remove Book", command=remove_book)
 
-# Add Book Button
-add_button = tk.Button(root, text="Add Book", command=add_book)
-add_button.grid(row=4, column=0, columnspan=2, pady=10)
+title_entry.pack(pady=2)
+genre_entry.pack(pady=2)
+copies_entry.pack(pady=2)
+add_btn.pack(pady=5)
+remove_btn.pack(pady=5)
 
-# Run the GUI
+# Start at Home
+show_home()
 root.mainloop()
-
-# Close the database connection when the program ends
 conn.close()
