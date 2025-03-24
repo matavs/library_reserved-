@@ -43,6 +43,20 @@ def show_members():
     members_frame.pack(fill='both', expand=True)
     fetch_members()
 
+def get_member_borrowing_history(member_id):
+    """
+    Retrieves the borrowing history of a specific member.
+    """
+    cursor.execute("""
+        SELECT b.Title, bh.BorrowDate, bh.ReturnDate
+        FROM BorrowingHistory bh
+        JOIN Books b ON bh.BookID = b.BookID
+        WHERE bh.MemberID = ?
+        ORDER BY bh.BorrowDate DESC;
+    """, (member_id,))
+    
+    return cursor.fetchall()
+
 def fetch_members():
     for row in members_table.get_children():
         members_table.delete(row)
@@ -127,6 +141,21 @@ def show_books():
     hide_all_frames()
     books_frame.pack(fill='both', expand=True)
     fetch_books()
+
+def search_books(event=None):
+    search_text = book_search_entry.get().lower()
+    if search_text == "search for books":
+        return
+
+    for item in books_table.get_children():
+        books_table.delete(item)
+
+    cursor.execute("SELECT BookID, Title, Author, Genre, AvailableCopies FROM Books WHERE Title LIKE %s OR Author LIKE %s OR Genre LIKE %s", 
+                  (f"%{search_text}%", f"%{search_text}%", f"%{search_text}%"))
+
+    for book in cursor.fetchall():
+        books_table.insert("", "end", values=book)
+
 
 def fetch_books():
     for row in books_table.get_children():
@@ -715,19 +744,39 @@ books_frame = tk.Frame(main_content, bg='#f5f5f5')
 
 # Header
 tk.Label(books_frame, text="Books", font=("Arial", 20, "bold"), 
-         bg='#f5f5f5').pack(anchor='w', pady=(0, 10))
+         bg='#f5f5f5').pack(anchor='nw', pady=(0, 0))
 
-# Action buttons
+# Header with search
+book_header_frame = tk.Frame(books_frame, bg='#f5f5f5')
+book_header_frame.pack(fill='x', pady=(0, 0))
+
+
+# Search box for Books
+book_search_frame = tk.Frame(book_header_frame, bg='#f5f5f5')
+book_search_frame.pack(side='right')
+
+book_search_entry = tk.Entry(book_search_frame, width=30, font=("Arial", 10))
+book_search_entry.pack(side='left')
+book_search_entry.insert(1, "Search for Books")
+book_search_entry.bind("<FocusIn>", lambda e: book_search_entry.delete(0, tk.END) if book_search_entry.get() == "Search for Books" else None)
+book_search_entry.bind("<FocusOut>", lambda e: book_search_entry.insert(0, "Search for Books") if book_search_entry.get() == "" else None)
+book_search_entry.bind("<Return>", search_books)
+
+
+book_search_button = tk.Button(book_search_frame, text="🔍", font=("Arial", 10))
+book_search_button.pack(side='left', padx=0)
+book_search_button.config(command=search_books)
+
 book_actions_frame = tk.Frame(books_frame, bg='#f5f5f5')
-book_actions_frame.pack(fill='x', pady=10)
+book_actions_frame.pack(fill='x', pady=0)
 
 add_book_btn = tk.Button(book_actions_frame, text="Add a book", bg='#4CAF50', fg='white',
                          command=show_add_book_dialog)
-add_book_btn.pack(side='left', padx=5)
+add_book_btn.pack(side='left', padx=0)
 
 remove_book_btn = tk.Button(book_actions_frame, text="remove a book", bg='#f44336', fg='white',
                            command=remove_book)
-remove_book_btn.pack(side='left', padx=5)
+remove_book_btn.pack(side='left', padx=0)
 
 # Books table
 books_table_frame = tk.Frame(books_frame, bg='white', bd=1, relief='solid')
@@ -910,9 +959,10 @@ def generate_report():
     report_window.title("Library Reports")
     report_window.geometry("600x500")
     report_window.transient(root)
-    
     report_notebook = ttk.Notebook(report_window)
     report_notebook.pack(fill='both', expand=True, padx=10, pady=10)
+
+
     
     # Books summary tab
     books_report = tk.Frame(report_notebook, padx=15, pady=15)
@@ -945,6 +995,8 @@ def generate_report():
     # Members summary tab
     members_report = tk.Frame(report_notebook, padx=15, pady=15)
     report_notebook.add(members_report, text="Members Summary")
+
+
     
     tk.Label(members_report, text="Membership Statistics", font=("Arial", 16, "bold")).pack(pady=(0, 15))
     
@@ -976,6 +1028,8 @@ def generate_report():
 report_btn = tk.Button(home_frame, text="Generate Reports", font=("Arial", 12), 
                       command=generate_report, bg='#2c82c9', fg='white', padx=10, pady=5)
 report_btn.pack(pady=20)
+
+
 
 # --- Main Menu Bar ---
 menu_bar = tk.Menu(root)
