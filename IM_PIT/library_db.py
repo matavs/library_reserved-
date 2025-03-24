@@ -220,7 +220,7 @@ def show_reservations():
 def fetch_reservations():
     for row in reservations_table.get_children():
         reservations_table.delete(row)
-    cursor.execute("SELECT Reservation, MemberID, BookID, ReservationDate FROM Reservations")
+    cursor.execute("SELECT ReservationID, MemberID, BookID, ReservationDate FROM Reservations")
     for reservation in cursor.fetchall():
         reservations_table.insert("", "end", values=reservation)
 
